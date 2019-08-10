@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { Fragment, useReducer } from "react";
 
 /*
     Напишите компонент с двуми инпутами и кнопкой
@@ -22,29 +22,39 @@ import React, { useState } from "react";
     https://reactjs.org/docs/hooks-reference.html#usereducer
 */
 
-export const Form = (props) => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [message, setMessage] = useState('');
+const initialState = {
+    email: '',
+    password: '',
+    message: ''
+};
 
-    function handleSubmit(e) {
-        e.preventDefault();
-        
-        if (email !== '' && password !== '') {
-            setMessage('Вы вошли');
-        }
-        else {
-            setMessage('');
-        }
+function reducer(state, action) {
+    switch (action.type) {
+        case 'email':
+        case 'password':
+            return {'action.type': action.data};
+        case 'submit':
+            if (state.email !== '' && state.password !== '') {
+                return {message: 'Вы вошли'};
+            }
+            else {
+                return {message: ''};
+            }
+        default:
+            return {};
     }
+}
+
+export const Form = (props) => {
+    const [state, dispatch] = useReducer(reducer, initialState);
 
     return (
-        <div>
-            <input type="email" name="email" data-testid="email-input" value={email} onChange={ (e) => setEmail(e.target.value) } />
-            <input type="password" name="password" data-testid="password-input" value={password} onChange={ (e) => setPassword(e.target.value) } />
-            <input type="submit" name="submit" data-testid="submit" onClick={ handleSubmit } />
+        <Fragment>
+            <input type="email" name="email" data-testid="email-input" value={state.email} onChange={ (e) => dispatch({type: 'email', data: e.target.value}) } />
+            <input type="password" name="password" data-testid="password-input" value={state.password} onChange={ (e) => dispatch({type: 'password', data: e.target.value}) } />
+            <input type="submit" name="submit" data-testid="submit" onClick={ (e) => { e.preventDefault(); dispatch({type: 'submit'}) } } />
 
-            {message && <div data-testid="success-message">{message}</div>}
-        </div>
+            {state.message && <div data-testid="success-message">{state.message}</div>}
+        </Fragment>
     );
 };
